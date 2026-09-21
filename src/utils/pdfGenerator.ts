@@ -9,14 +9,12 @@ export function calculateBudgetTotals(budget: Budget) {
     0
   );
   const discountAmount = subtotal * ((Number(budget.discountRate) || 0) / 100);
-  const taxableAmount = Math.max(0, subtotal - discountAmount);
-  const taxAmount = taxableAmount * ((Number(budget.taxRate) || 0) / 100);
-  const total = taxableAmount + taxAmount;
+  const total = Math.max(0, subtotal - discountAmount);
 
   return {
     subtotal,
     discountAmount,
-    taxAmount,
+    taxAmount: 0,
     total,
   };
 }
@@ -182,7 +180,7 @@ export function createBudgetPDF(budget: Budget, profile: CompanyProfile): jsPDF 
   // Background card for totals
   doc.setFillColor(248, 250, 252);
   doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(totalsStartX, curY, totalsWidth, budget.discountRate > 0 || budget.taxRate > 0 ? 36 : 22, 2, 2, 'FD');
+  doc.roundedRect(totalsStartX, curY, totalsWidth, budget.discountRate > 0 ? 28 : 20, 2, 2, 'FD');
 
   curY += 6;
   doc.setFontSize(9);
@@ -197,12 +195,6 @@ export function createBudgetPDF(budget: Budget, profile: CompanyProfile): jsPDF 
     doc.setTextColor(220, 38, 38);
     doc.text(`-${formatMoney(totals.discountAmount, currency)}`, totalsStartX + totalsWidth - 5, curY, { align: 'right' });
     doc.setTextColor(...textColor);
-  }
-
-  if (budget.taxRate > 0) {
-    curY += 6;
-    doc.text(`IVA / Impuesto (${budget.taxRate}%):`, totalsStartX + 5, curY);
-    doc.text(formatMoney(totals.taxAmount, currency), totalsStartX + totalsWidth - 5, curY, { align: 'right' });
   }
 
   curY += 8;

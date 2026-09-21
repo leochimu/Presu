@@ -31,10 +31,6 @@ export function buildBudgetTextSummary(budget: Budget, profile: CompanyProfile):
     message += `🏷️ *Descuento (${budget.discountRate}%):* -${formatMoney(totals.discountAmount, currency)}\n`;
   }
 
-  if (budget.taxRate > 0) {
-    message += `🏛️ *IVA / Impuesto (${budget.taxRate}%):* ${formatMoney(totals.taxAmount, currency)}\n`;
-  }
-
   message += `✨ *TOTAL A PAGAR: ${formatMoney(totals.total, currency)}*\n`;
 
   if (budget.notes?.trim()) {
@@ -85,9 +81,6 @@ export function openEmail(budget: Budget, profile: CompanyProfile, targetEmail?:
   body += `\nSubtotal: ${formatMoney(totals.subtotal, currency)}\n`;
   if (budget.discountRate > 0) {
     body += `Descuento (${budget.discountRate}%): -${formatMoney(totals.discountAmount, currency)}\n`;
-  }
-  if (budget.taxRate > 0) {
-    body += `Impuesto (${budget.taxRate}%): ${formatMoney(totals.taxAmount, currency)}\n`;
   }
   body += `TOTAL: ${formatMoney(totals.total, currency)}\n\n`;
 

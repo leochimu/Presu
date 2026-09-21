@@ -202,13 +202,6 @@ export const BudgetPreviewCard: React.FC<Props> = ({
                 </div>
               )}
 
-              {budget.taxRate > 0 && (
-                <div className="flex justify-between text-xs text-slate-600">
-                  <span>IVA / Impuesto ({budget.taxRate}%):</span>
-                  <span className="font-medium text-slate-900">{formatMoney(totals.taxAmount, currency)}</span>
-                </div>
-              )}
-
               <div className="pt-2 border-t border-slate-200 flex justify-between items-baseline">
                 <span className="text-sm font-bold text-slate-900">TOTAL:</span>
                 <span className="text-xl font-extrabold text-slate-900">
