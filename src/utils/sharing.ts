@@ -132,3 +132,115 @@ export async function sharePDFFile(
     return { success: false, supported: true, error: errorMsg };
   }
 }
+
+export function buildTechnicalReportTextSummary(budget: Budget, profile: CompanyProfile): string {
+  const tech = budget.technicalReport;
+  const clientName = tech?.clientName || budget.client.name || 'Estimado/a cliente';
+  const emitterName = profile.name ? profile.name.trim() : 'Servicio Técnico';
+
+  let conditionStr = 'No especificado';
+  if (tech?.conditionConforme) conditionStr = '✅ Conforme (Segura y operativa)';
+  else if (tech?.conditionConformeObservaciones) conditionStr = '⚠️ Conforme con Observaciones';
+  else if (tech?.conditionNoConforme) conditionStr = '❌ No Conforme (Riesgo / Intervención inmediata)';
+
+  let propertyStr = '';
+  if (tech?.propertyType?.residential) propertyStr = 'Residencial';
+  else if (tech?.propertyType?.commercial) propertyStr = 'Comercial';
+  else if (tech?.propertyType?.industrial) propertyStr = 'Industrial';
+  else if (tech?.propertyType?.other) propertyStr = tech.propertyType.otherText ? `Otro (${tech.propertyType.otherText})` : 'Otro';
+
+  let message = `📋 *INFORME DE REVISIÓN TÉCNICA PREVENTIVA / ESTADO DE INSTALACIÓN*\n`;
+  message += `━━━━━━━━━━━━━━━━━━━━━\n`;
+  message += `📄 *N° de Informe:* ${tech?.reportNumber || budget.number || '001'}\n`;
+  message += `📅 *Fecha de Inspección:* ${tech?.inspectionDate || budget.date}\n`;
+  message += `👤 *Técnico/Inspector:* ${tech?.technicianName || profile.name || 'Técnico'}`;
+  if (tech?.technicianLicense) message += ` (Matrícula: ${tech.technicianLicense})`;
+  message += `\n`;
+  message += `🏠 *Propietario/Cliente:* ${clientName}\n`;
+  if (tech?.clientPhone || budget.client.phone) message += `📞 *Teléfono:* ${tech?.clientPhone || budget.client.phone}\n`;
+  if (tech?.propertyAddress || budget.client.address) message += `📍 *Dirección:* ${tech?.propertyAddress || budget.client.address}\n`;
+  if (propertyStr) message += `🏢 *Tipo de Inmueble:* ${propertyStr}\n`;
+  message += `━━━━━━━━━━━━━━━━━━━━━\n`;
+  message += `🚦 *Estado General:* ${conditionStr}\n`;
+
+  if (tech?.generalSummary?.trim()) {
+    message += `\n📝 *Resumen del Estado General:*\n${tech.generalSummary.trim()}\n`;
+  }
+
+  if (tech?.findingsAndActions?.trim()) {
+    message += `\n🔍 *Detalle de Hallazgos y Acciones:*\n${tech.findingsAndActions.trim()}\n`;
+  }
+
+  if (tech?.conclusionsAndRecommendations?.trim()) {
+    message += `\n💡 *Conclusiones y Recomendaciones Finales:*\n${tech.conclusionsAndRecommendations.trim()}\n`;
+  }
+
+  message += `\n━━━━━━━━━━━━━━━━━━━━━\n`;
+  message += `Emitido por: *${emitterName}*`;
+  if (tech?.technicianSignatureName) message += `\nFirma: ${tech.technicianSignatureName}`;
+  if (profile.phone) message += `\nTel: ${profile.phone}`;
+  if (profile.email) message += `\nEmail: ${profile.email}`;
+
+  return message;
+}
+
+export function openTechnicalReportWhatsApp(budget: Budget, profile: CompanyProfile, targetPhone?: string) {
+  const message = buildTechnicalReportTextSummary(budget, profile);
+  const rawPhone = targetPhone ?? budget.technicalReport?.clientPhone ?? budget.client.phone ?? '';
+  const cleanPhone = rawPhone.replace(/[^0-9]/g, '');
+
+  const encoded = encodeURIComponent(message);
+  let url = '';
+
+  if (cleanPhone) {
+    url = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encoded}`;
+  } else {
+    url = `https://api.whatsapp.com/send?text=${encoded}`;
+  }
+
+  window.open(url, '_blank');
+}
+
+export function openTechnicalReportEmail(budget: Budget, profile: CompanyProfile, targetEmail?: string) {
+  const tech = budget.technicalReport;
+  const rawEmail = targetEmail ?? budget.client.email ?? '';
+  const subject = `Informe Técnico Nº ${tech?.reportNumber || budget.number || '001'} - Revisión Técnica Preventiva`;
+
+  let conditionStr = 'No especificado';
+  if (tech?.conditionConforme) conditionStr = 'Conforme (Instalación segura y operativa)';
+  else if (tech?.conditionConformeObservaciones) conditionStr = 'Conforme con Observaciones';
+  else if (tech?.conditionNoConforme) conditionStr = 'No Conforme (Riesgo potencial o fallas graves)';
+
+  let body = `Estimado/a ${tech?.clientName || budget.client.name || 'Cliente'},\n\n`;
+  body += `Adjuntamos el informe de revisión técnica preventiva correspondiente a su instalación:\n\n`;
+  body += `1. INFORMACIÓN GENERAL:\n`;
+  body += `- Nº de Informe: ${tech?.reportNumber || budget.number || '001'}\n`;
+  body += `- Fecha de Inspección: ${tech?.inspectionDate || budget.date}\n`;
+  body += `- Técnico/Inspector: ${tech?.technicianName || profile.name || 'Técnico'}`;
+  if (tech?.technicianLicense) body += ` (Reg/Matrícula: ${tech.technicianLicense})`;
+  body += `\n- Propietario/Cliente: ${tech?.clientName || budget.client.name}\n`;
+  body += `- Dirección del Inmueble: ${tech?.propertyAddress || budget.client.address || '-'}\n\n`;
+
+  body += `2. ESTADO GENERAL DE LA INSTALACIÓN:\n`;
+  body += `- Condición: ${conditionStr}\n`;
+  if (tech?.generalSummary?.trim()) {
+    body += `- Resumen: ${tech.generalSummary.trim()}\n`;
+  }
+  body += `\n`;
+
+  if (tech?.findingsAndActions?.trim()) {
+    body += `4. DETALLE DE HALLAZGOS Y ACCIONES RECOMENDADAS:\n${tech.findingsAndActions.trim()}\n\n`;
+  }
+
+  if (tech?.conclusionsAndRecommendations?.trim()) {
+    body += `5. CONCLUSIONES Y RECOMENDACIONES FINALES:\n${tech.conclusionsAndRecommendations.trim()}\n\n`;
+  }
+
+  body += `Quedamos a su disposición ante cualquier consulta técnica.\n\n`;
+  body += `Atentamente,\n${tech?.technicianSignatureName || tech?.technicianName || profile.name || 'Técnico Responsable'}\n`;
+  if (profile.phone) body += `Teléfono: ${profile.phone}\n`;
+  if (profile.email) body += `Email: ${profile.email}\n`;
+
+  const mailtoUrl = `mailto:${encodeURIComponent(rawEmail)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  window.location.href = mailtoUrl;
+}

@@ -1,6 +1,6 @@
 {
   "name": "Generador de Presupuestos",
-  "description": "Aplicación sencilla para crear presupuestos, calcular totales, generar informes en PDF y enviar por WhatsApp o correo electrónico.",
+  "description": "Aplicación para crear presupuestos e informes técnicos, calcular totales, generar documentos PDF y enviar por WhatsApp o correo electrónico.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

@@ -1,22 +1,12 @@
 import React from 'react';
-import { Budget, CurrencyOption } from '../types';
-import { User, Phone, Mail, Calendar, Hash, Percent, FileText, DollarSign } from 'lucide-react';
+import { Budget } from '../types';
+import { User, Phone, Mail, Calendar, Hash, Percent, FileText } from 'lucide-react';
 
 interface Props {
   budget: Budget;
   onChange: (updated: Partial<Budget>) => void;
   onClientChange: (field: string, value: string) => void;
 }
-
-const CURRENCIES: CurrencyOption[] = [
-  { code: 'USD', symbol: '$', name: 'Dólares / Pesos ($)' },
-  { code: 'EUR', symbol: '€', name: 'Euros (€)' },
-  { code: 'ARS', symbol: '$', name: 'Pesos Argentinos (ARS $)' },
-  { code: 'MXN', symbol: '$', name: 'Pesos Mexicanos (MXN $)' },
-  { code: 'CLP', symbol: '$', name: 'Pesos Chilenos (CLP $)' },
-  { code: 'COP', symbol: '$', name: 'Pesos Colombianos (COP $)' },
-  { code: 'PEN', symbol: 'S/.', name: 'Soles Peruanos (S/.)' },
-];
 
 export const BudgetDetailsForm: React.FC<Props> = ({ budget, onChange, onClientChange }) => {
   return (
@@ -25,7 +15,7 @@ export const BudgetDetailsForm: React.FC<Props> = ({ budget, onChange, onClientC
       <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-4">
         <div className="flex items-center gap-2">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-100 text-blue-700 font-bold text-xs">
-            2
+            1
           </span>
           <div>
             <h2 className="text-base font-semibold text-slate-800">Datos del Cliente</h2>
@@ -92,15 +82,15 @@ export const BudgetDetailsForm: React.FC<Props> = ({ budget, onChange, onClientC
       <div className="bg-white rounded-2xl p-5 border border-slate-200/80 shadow-xs space-y-4">
         <div className="flex items-center gap-2">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-amber-100 text-amber-800 font-bold text-xs">
-            3
+            2
           </span>
           <div>
             <h2 className="text-base font-semibold text-slate-800">Opciones y Condiciones</h2>
-            <p className="text-xs text-slate-500">Validez, impuestos, descuentos y notas comerciales</p>
+            <p className="text-xs text-slate-500">Validez, descuentos y notas comerciales</p>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           <div>
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Nº Presupuesto
@@ -147,71 +137,29 @@ export const BudgetDetailsForm: React.FC<Props> = ({ budget, onChange, onClientC
               className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
             />
           </div>
-
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">
-              Moneda
-            </label>
-            <div className="relative">
-              <DollarSign className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
-              <select
-                id="budget-currency-select"
-                value={budget.currency}
-                onChange={(e) => onChange({ currency: e.target.value })}
-                className="w-full pl-9 pr-2 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent bg-white"
-              >
-                {CURRENCIES.map((c) => (
-                  <option key={c.code} value={c.symbol}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">
-                Descuento (%)
-              </label>
-              <div className="relative">
-                <Percent className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
-                <input
-                  id="budget-discount-input"
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={budget.discountRate || ''}
-                  onChange={(e) => onChange({ discountRate: parseFloat(e.target.value) || 0 })}
-                  placeholder="0"
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-600 mb-1">
-                IVA / Impuesto (%)
-              </label>
-              <div className="relative">
-                <Percent className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
-                <input
-                  id="budget-tax-input"
-                  type="number"
-                  min="0"
-                  max="100"
-                  value={budget.taxRate || ''}
-                  onChange={(e) => onChange({ taxRate: parseFloat(e.target.value) || 0 })}
-                  placeholder="0 (o 21, 16)"
-                  className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-                />
-              </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 mb-1">
+              Descuento (%)
+            </label>
+            <div className="relative">
+              <Percent className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+              <input
+                id="budget-discount-input"
+                type="number"
+                min="0"
+                max="100"
+                value={budget.discountRate || ''}
+                onChange={(e) => onChange({ discountRate: parseFloat(e.target.value) || 0 })}
+                placeholder="0"
+                className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              />
             </div>
           </div>
 
-          <div>
+          <div className="sm:col-span-2">
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Condiciones de Pago y Notas
             </label>

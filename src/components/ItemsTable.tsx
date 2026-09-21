@@ -1,21 +1,75 @@
 import React, { useState, useRef } from 'react';
-import { BudgetItem } from '../types';
-import { Plus, Trash2, Copy, Sparkles, AlertCircle } from 'lucide-react';
+import { BudgetItem, CatalogItem } from '../types';
+import { Plus, Trash2, Copy, Sparkles, AlertCircle, Tag, Check } from 'lucide-react';
 import { formatMoney } from '../utils/pdfGenerator';
 
 interface Props {
   items: BudgetItem[];
   currency: string;
+  catalogItems?: CatalogItem[];
   onUpdateItems: (items: BudgetItem[]) => void;
 }
 
-export const ItemsTable: React.FC<Props> = ({ items, currency, onUpdateItems }) => {
+export const ItemsTable: React.FC<Props> = ({
+  items,
+  currency,
+  catalogItems = [],
+  onUpdateItems,
+}) => {
   const [desc, setDesc] = useState('');
   const [qty, setQty] = useState<number | string>(1);
   const [price, setPrice] = useState<number | string>('');
   const [inputError, setInputError] = useState('');
+  const [isSuggestionsOpen, setIsSuggestionsOpen] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [autoFilledNotice, setAutoFilledNotice] = useState<string | null>(null);
 
   const descInputRef = useRef<HTMLInputElement>(null);
+  const qtyInputRef = useRef<HTMLInputElement>(null);
+  const suggestionsContainerRef = useRef<HTMLDivElement>(null);
+
+  const matchingSuggestions = desc.trim()
+    ? catalogItems.filter((cat) =>
+        cat.name.toLowerCase().includes(desc.trim().toLowerCase())
+      )
+    : [];
+
+  const handleSelectSuggestion = (item: CatalogItem) => {
+    setDesc(item.name);
+    setPrice(item.unitPrice);
+    setIsSuggestionsOpen(false);
+    setHighlightedIndex(-1);
+    setAutoFilledNotice(`Reconocido: ${item.name} (${formatMoney(item.unitPrice, currency)})`);
+    setTimeout(() => setAutoFilledNotice(null), 3000);
+
+    setTimeout(() => {
+      qtyInputRef.current?.focus();
+      qtyInputRef.current?.select();
+    }, 40);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isSuggestionsOpen || matchingSuggestions.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setHighlightedIndex((prev) =>
+        prev < matchingSuggestions.length - 1 ? prev + 1 : 0
+      );
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setHighlightedIndex((prev) =>
+        prev > 0 ? prev - 1 : matchingSuggestions.length - 1
+      );
+    } else if (e.key === 'Enter') {
+      if (highlightedIndex >= 0 && highlightedIndex < matchingSuggestions.length) {
+        e.preventDefault();
+        handleSelectSuggestion(matchingSuggestions[highlightedIndex]);
+      }
+    } else if (e.key === 'Escape') {
+      setIsSuggestionsOpen(false);
+    }
+  };
 
   const handleAddItem = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -41,6 +95,8 @@ export const ItemsTable: React.FC<Props> = ({ items, currency, onUpdateItems }) 
     setQty(1);
     setPrice('');
     setInputError('');
+    setIsSuggestionsOpen(false);
+    setHighlightedIndex(-1);
     descInputRef.current?.focus();
   };
 
@@ -110,22 +166,77 @@ export const ItemsTable: React.FC<Props> = ({ items, currency, onUpdateItems }) 
         className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/90 space-y-3"
       >
         <div className="grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
-          <div className="md:col-span-6">
-            <label className="block text-xs font-semibold text-slate-600 mb-1">
-              Descripción / Concepto *
-            </label>
+          <div className="md:col-span-6 relative">
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-slate-600">
+                Descripción / Concepto *
+              </label>
+              {catalogItems.length > 0 && (
+                <span className="text-[10px] text-slate-400">
+                  Autocompleta desde Catálogo
+                </span>
+              )}
+            </div>
             <input
               id="new-item-desc"
               ref={descInputRef}
               type="text"
-              placeholder="Ej: Mano de obra, Instalación, Producto..."
+              placeholder="Ej: Mano de obra, Caño 1/2, Instalación..."
               value={desc}
+              autoComplete="off"
+              onFocus={() => {
+                if (desc.trim()) setIsSuggestionsOpen(true);
+              }}
+              onBlur={() => {
+                setTimeout(() => setIsSuggestionsOpen(false), 200);
+              }}
               onChange={(e) => {
                 setDesc(e.target.value);
+                setIsSuggestionsOpen(true);
+                setHighlightedIndex(-1);
                 if (inputError) setInputError('');
               }}
-              className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent"
+              onKeyDown={handleKeyDown}
+              className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent font-medium"
             />
+
+            {/* Dropdown de autocompletado */}
+            {isSuggestionsOpen && matchingSuggestions.length > 0 && (
+              <div
+                ref={suggestionsContainerRef}
+                className="absolute z-30 left-0 right-0 mt-1 bg-white border border-slate-200 rounded-xl shadow-xl max-h-56 overflow-y-auto py-1 text-sm divide-y divide-slate-100 animate-in fade-in duration-100"
+              >
+                <div className="px-3 py-1 bg-slate-50 text-[11px] font-semibold text-slate-500 uppercase tracking-wider flex items-center justify-between">
+                  <span className="flex items-center gap-1">
+                    <Tag className="w-3 h-3 text-emerald-600" />
+                    Catálogo de Ítems
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-normal">
+                    Click o Flechas + Enter
+                  </span>
+                </div>
+                {matchingSuggestions.map((item, idx) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onMouseDown={(e) => {
+                      e.preventDefault();
+                      handleSelectSuggestion(item);
+                    }}
+                    className={`w-full text-left px-3 py-2 flex items-center justify-between transition-colors ${
+                      highlightedIndex === idx
+                        ? 'bg-emerald-50 text-emerald-950 font-semibold'
+                        : 'hover:bg-slate-50 text-slate-800'
+                    }`}
+                  >
+                    <span className="text-xs sm:text-sm font-medium">{item.name}</span>
+                    <span className="text-xs font-bold text-emerald-700 bg-emerald-50/80 px-2 py-0.5 rounded-md border border-emerald-200">
+                      {formatMoney(item.unitPrice, currency)}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 md:col-span-4 gap-2">
@@ -135,13 +246,14 @@ export const ItemsTable: React.FC<Props> = ({ items, currency, onUpdateItems }) 
               </label>
               <input
                 id="new-item-qty"
+                ref={qtyInputRef}
                 type="number"
                 min="0.01"
                 step="any"
                 value={qty}
                 onChange={(e) => setQty(e.target.value)}
                 placeholder="1"
-                className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent text-center"
+                className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent text-center font-medium"
               />
             </div>
 
@@ -157,7 +269,7 @@ export const ItemsTable: React.FC<Props> = ({ items, currency, onUpdateItems }) 
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
                 placeholder="0.00"
-                className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent text-right"
+                className="w-full px-3 py-2 text-sm bg-white border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent text-right font-semibold"
               />
             </div>
           </div>
@@ -178,6 +290,13 @@ export const ItemsTable: React.FC<Props> = ({ items, currency, onUpdateItems }) 
           <div className="flex items-center gap-1.5 text-xs text-rose-600 font-medium">
             <AlertCircle className="w-3.5 h-3.5" />
             <span>{inputError}</span>
+          </div>
+        )}
+
+        {autoFilledNotice && (
+          <div className="flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-100/70 border border-emerald-200 px-3 py-1.5 rounded-lg font-medium animate-in fade-in duration-150">
+            <Check className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+            <span>{autoFilledNotice} — Solo ajusta la cantidad si hace falta y haz clic en &quot;Agregar&quot;.</span>
           </div>
         )}
       </form>
