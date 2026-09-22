@@ -4,6 +4,7 @@ import { ItemsTable } from './components/ItemsTable';
 import { BudgetDetailsForm } from './components/BudgetDetailsForm';
 import { BudgetPreviewCard } from './components/BudgetPreviewCard';
 import { TechnicalReportView } from './components/TechnicalReportView';
+import { BillingView } from './components/BillingView';
 import { CatalogManager } from './components/CatalogManager';
 import { CompanyProfileModal } from './components/CompanyProfileModal';
 import { ShareModal } from './components/ShareModal';
@@ -29,6 +30,7 @@ import {
   ListPlus,
   ArrowRight,
   Palette,
+  Receipt,
 } from 'lucide-react';
 
 const DEFAULT_PROFILE: CompanyProfile = {
@@ -124,7 +126,7 @@ export default function App() {
     return budgets[0]?.id || '';
   });
 
-  const [viewMode, setViewMode] = useState<'budget' | 'items' | 'preview' | 'technical'>('budget');
+  const [viewMode, setViewMode] = useState<'budget' | 'items' | 'preview' | 'technical' | 'billing'>('budget');
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isShareModalOpen, setIsShareModalOpen] = useState(false);
   const [isSavedDrawerOpen, setIsSavedDrawerOpen] = useState(false);
@@ -340,29 +342,29 @@ export default function App() {
     ? 'inline-flex p-1 bg-zinc-800 rounded-xl border border-zinc-700 shadow-2xs max-w-full overflow-x-auto'
     : 'inline-flex p-1 bg-slate-100 rounded-xl border border-slate-200 shadow-2xs max-w-full overflow-x-auto';
 
-  const getTabClass = (tab: 'budget' | 'items' | 'preview' | 'technical') => {
+  const getTabClass = (tab: 'budget' | 'items' | 'preview' | 'technical' | 'billing') => {
     const isActive = viewMode === tab;
     if (isGraphite) {
       if (isActive) {
-        return tab === 'technical'
-          ? 'bg-sky-950 text-sky-200 shadow-xs ring-1 ring-sky-500 font-bold'
-          : 'bg-zinc-700 text-white shadow-xs font-bold';
+        if (tab === 'technical') return 'bg-sky-950 text-sky-200 shadow-xs ring-1 ring-sky-500 font-bold';
+        if (tab === 'billing') return 'bg-emerald-950 text-emerald-200 shadow-xs ring-1 ring-emerald-500 font-bold';
+        return 'bg-zinc-700 text-white shadow-xs font-bold';
       }
       return 'text-zinc-400 hover:text-zinc-200';
     }
     if (isSlate) {
       if (isActive) {
-        return tab === 'technical'
-          ? 'bg-white text-sky-900 shadow-xs ring-1 ring-sky-400 font-bold'
-          : 'bg-white text-slate-900 shadow-xs font-bold';
+        if (tab === 'technical') return 'bg-white text-sky-900 shadow-xs ring-1 ring-sky-400 font-bold';
+        if (tab === 'billing') return 'bg-white text-emerald-900 shadow-xs ring-1 ring-emerald-500 font-bold';
+        return 'bg-white text-slate-900 shadow-xs font-bold';
       }
       return 'text-slate-700 hover:text-slate-900 font-semibold';
     }
     // light
     if (isActive) {
-      return tab === 'technical'
-        ? 'bg-white text-sky-900 shadow-xs ring-1 ring-sky-300 font-semibold'
-        : 'bg-white text-slate-900 shadow-xs font-semibold';
+      if (tab === 'technical') return 'bg-white text-sky-900 shadow-xs ring-1 ring-sky-300 font-semibold';
+      if (tab === 'billing') return 'bg-white text-emerald-900 shadow-xs ring-1 ring-emerald-400 font-semibold';
+      return 'bg-white text-slate-900 shadow-xs font-semibold';
     }
     return 'text-slate-600 hover:text-slate-900';
   };
@@ -569,12 +571,28 @@ export default function App() {
             <Wrench className="w-3.5 h-3.5 text-sky-600" />
             4. Informe Técnico
           </button>
+          <button
+            id="tab-billing-btn"
+            type="button"
+            onClick={() => setViewMode('billing')}
+            className={`inline-flex items-center gap-1.5 px-3 sm:px-4 py-1.5 text-xs rounded-lg transition-all whitespace-nowrap ${getTabClass('billing')}`}
+          >
+            <Receipt className="w-3.5 h-3.5 text-emerald-600" />
+            5. facturar
+          </button>
         </div>
       </div>
 
       {/* Main Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-6 flex-1 w-full">
-        {viewMode === 'technical' ? (
+        {viewMode === 'billing' ? (
+          <BillingView
+            budget={currentBudget}
+            profile={profile}
+            theme={theme}
+            onShowToast={showToast}
+          />
+        ) : viewMode === 'technical' ? (
           <TechnicalReportView
             budget={currentBudget}
             profile={profile}
