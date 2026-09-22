@@ -10,6 +10,9 @@ export function buildBudgetTextSummary(budget: Budget, profile: CompanyProfile):
   let message = `📄 *PRESUPUESTO Nº ${budget.number || '001'}*\n`;
   message += `━━━━━━━━━━━━━━━━━━━━━\n`;
   message += `👤 *Cliente:* ${clientName}\n`;
+  if (budget.client.address?.trim()) {
+    message += `📍 *Dirección:* ${budget.client.address.trim()}\n`;
+  }
   message += `📅 *Fecha:* ${budget.date || new Date().toISOString().split('T')[0]}\n`;
   if (budget.validUntil) {
     message += `⏳ *Vigencia:* ${budget.validUntil}\n`;
@@ -68,8 +71,11 @@ export function openEmail(budget: Budget, profile: CompanyProfile, targetEmail?:
   const subject = `Presupuesto Nº ${budget.number || '001'} - ${profile.name || 'Propuesta Comercial'}`;
 
   let body = `Estimado/a ${budget.client.name || 'Cliente'},\n\n`;
-  body += `Adjunto la información detallada de su presupuesto Nº ${budget.number || '001'}.\n\n`;
-  body += `RESUMEN DE ÍTEMS:\n`;
+  body += `Adjunto la información detallada de su presupuesto Nº ${budget.number || '001'}.\n`;
+  if (budget.client.address?.trim()) {
+    body += `Dirección del cliente / inmueble: ${budget.client.address.trim()}\n`;
+  }
+  body += `\nRESUMEN DE ÍTEMS:\n`;
 
   budget.items.forEach((item, idx) => {
     const qty = Number(item.quantity) || 0;

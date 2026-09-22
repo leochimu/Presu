@@ -1,6 +1,6 @@
 import React from 'react';
 import { Budget } from '../types';
-import { User, Phone, Mail, Calendar, Hash, Percent, FileText } from 'lucide-react';
+import { User, Phone, Mail, MapPin, Calendar, Hash, Percent, FileText } from 'lucide-react';
 
 interface Props {
   budget: Budget;
@@ -23,7 +23,7 @@ export const BudgetDetailsForm: React.FC<Props> = ({ budget, onChange, onClientC
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5">
           <div>
             <label className="block text-xs font-semibold text-slate-600 mb-1">
               Nombre / Empresa del Cliente *
@@ -74,6 +74,24 @@ export const BudgetDetailsForm: React.FC<Props> = ({ budget, onChange, onClientC
                 className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-600 mb-1">
+              Dirección / Domicilio del Cliente
+            </label>
+            <div className="relative">
+              <MapPin className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+              <input
+                id="client-address-input"
+                type="text"
+                placeholder="Ej: Av. Corrientes 1234, CABA"
+                value={budget.client.address || ''}
+                onChange={(e) => onClientChange('address', e.target.value)}
+                className="w-full pl-9 pr-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent"
+              />
+            </div>
+            <p className="text-[11px] text-slate-400 mt-0.5">Visible en la propuesta PDF y en el informe técnico</p>
           </div>
         </div>
       </div>

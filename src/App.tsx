@@ -248,6 +248,16 @@ export default function App() {
         ...currentBudget.client,
         [field]: value,
       },
+      ...(currentBudget.technicalReport
+        ? {
+            technicalReport: {
+              ...currentBudget.technicalReport,
+              ...(field === 'name' ? { clientName: value } : {}),
+              ...(field === 'phone' ? { clientPhone: value } : {}),
+              ...(field === 'address' ? { propertyAddress: value } : {}),
+            },
+          }
+        : {}),
     });
   };
 
@@ -269,6 +279,7 @@ export default function App() {
         name: '',
         phone: '',
         email: '',
+        address: '',
       },
       notes: 'Presupuesto válido por 15 días corridos.\nForma de pago a coordinar.',
       taxRate: currentBudget.taxRate ?? 0,
