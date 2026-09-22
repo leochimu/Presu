@@ -1,6 +1,7 @@
 import React from 'react';
 import { Budget, CompanyProfile } from '../types';
 import { calculateBudgetTotals, formatMoney, downloadBudgetPDF } from '../utils/pdfGenerator';
+import { formatDisplayDate } from '../utils/dateUtils';
 import { Download, Share2, Mail, MessageCircle, Eye, Building2 } from 'lucide-react';
 
 interface Props {
@@ -71,9 +72,15 @@ export const BudgetPreviewCard: React.FC<Props> = ({
               Nº {budget.number || '001'}
             </p>
             <div className="text-xs text-slate-500 mt-2 space-y-0.5">
-              <p><span className="font-medium text-slate-700">Fecha de emisión:</span> {budget.date || 'Hoy'}</p>
+              <p>
+                <span className="font-medium text-slate-700">Fecha de emisión:</span>{' '}
+                {formatDisplayDate(budget.date) || 'Hoy'}
+              </p>
               {budget.validUntil && (
-                <p><span className="font-medium text-slate-700">Vigencia:</span> {budget.validUntil}</p>
+                <p>
+                  <span className="font-medium text-slate-700">Vigencia hasta:</span>{' '}
+                  {formatDisplayDate(budget.validUntil)}
+                </p>
               )}
             </div>
           </div>

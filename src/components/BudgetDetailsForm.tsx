@@ -1,6 +1,7 @@
 import React from 'react';
 import { Budget } from '../types';
 import { User, Phone, Mail, MapPin, Calendar, Hash, Percent, FileText } from 'lucide-react';
+import { formatDateForInput } from '../utils/dateUtils';
 
 interface Props {
   budget: Budget;
@@ -135,7 +136,7 @@ export const BudgetDetailsForm: React.FC<Props> = ({ budget, onChange, onClientC
               <input
                 id="budget-date-input"
                 type="date"
-                value={budget.date}
+                value={formatDateForInput(budget.date)}
                 onChange={(e) => onChange({ date: e.target.value })}
                 className="w-full pl-9 pr-2 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
               />
@@ -144,16 +145,18 @@ export const BudgetDetailsForm: React.FC<Props> = ({ budget, onChange, onClientC
 
           <div>
             <label className="block text-xs font-semibold text-slate-600 mb-1">
-              Validez / Vigencia
+              Fecha de Validez / Vigencia
             </label>
-            <input
-              id="budget-validity-input"
-              type="text"
-              value={budget.validUntil}
-              onChange={(e) => onChange({ validUntil: e.target.value })}
-              placeholder="Ej: 15 días / 30/10/2026"
-              className="w-full px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
-            />
+            <div className="relative">
+              <Calendar className="w-4 h-4 absolute left-3 top-2.5 text-slate-400" />
+              <input
+                id="budget-validity-input"
+                type="date"
+                value={formatDateForInput(budget.validUntil)}
+                onChange={(e) => onChange({ validUntil: e.target.value })}
+                className="w-full pl-9 pr-2 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-transparent"
+              />
+            </div>
           </div>
         </div>
 

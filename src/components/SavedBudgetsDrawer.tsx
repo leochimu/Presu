@@ -1,6 +1,7 @@
 import React from 'react';
 import { Budget } from '../types';
 import { calculateBudgetTotals, formatMoney } from '../utils/pdfGenerator';
+import { formatDisplayDate } from '../utils/dateUtils';
 import { X, FolderOpen, Plus, Trash2, Calendar, User, ArrowRight } from 'lucide-react';
 
 interface Props {
@@ -103,7 +104,7 @@ export const SavedBudgetsDrawer: React.FC<Props> = ({
                       )}
                       <span className="text-xs text-slate-400 flex items-center gap-1">
                         <Calendar className="w-3 h-3" />
-                        {b.date || 'Sin fecha'}
+                        {formatDisplayDate(b.date) || 'Sin fecha'}
                       </span>
                     </div>
 

@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Budget, CompanyProfile } from '../types';
 import { createDefaultTechnicalReport } from './technicalReportDefaults';
+import { formatDisplayDate } from './dateUtils';
 
 export function calculateBudgetTotals(budget: Budget) {
   const subtotal = budget.items.reduce(
@@ -58,9 +59,11 @@ export function createBudgetPDF(budget: Budget, profile: CompanyProfile): jsPDF 
   doc.setTextColor(100, 116, 139);
   doc.setFont('helvetica', 'normal');
   doc.text(`Nº: ${budget.number || '0001'}`, 15, 30);
-  doc.text(`Fecha: ${budget.date || new Date().toISOString().split('T')[0]}`, 15, 35);
+  const formattedEmissionDate = formatDisplayDate(budget.date) || formatDisplayDate(new Date().toISOString().split('T')[0]);
+  doc.text(`Fecha de emisión: ${formattedEmissionDate}`, 15, 35);
   if (budget.validUntil) {
-    doc.text(`Vigencia hasta: ${budget.validUntil}`, 15, 40);
+    const formattedValidityDate = formatDisplayDate(budget.validUntil);
+    doc.text(`Vigencia hasta: ${formattedValidityDate}`, 15, 40);
   }
 
   // Issuer Info (Right side)
@@ -364,7 +367,7 @@ export function createTechnicalReportPDF(budget: Budget, profile: CompanyProfile
 
   // N° de Informe and Fecha de Inspección
   drawFieldLine('N° de Informe:', tech.reportNumber || budget.number || '', 20, 56, 46, 88);
-  drawFieldLine('Fecha de Inspección:', tech.inspectionDate || budget.date || '', 98, 56, 137, 190);
+  drawFieldLine('Fecha de Inspección:', formatDisplayDate(tech.inspectionDate || budget.date), 98, 56, 137, 190);
 
   // Nombre del Técnico/Inspector
   drawFieldLine(

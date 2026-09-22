@@ -1,5 +1,6 @@
 import { Budget, CompanyProfile } from '../types';
 import { calculateBudgetTotals, formatMoney, getBudgetPDFBlob } from './pdfGenerator';
+import { formatDisplayDate } from './dateUtils';
 
 export function buildBudgetTextSummary(budget: Budget, profile: CompanyProfile): string {
   const totals = calculateBudgetTotals(budget);
@@ -13,9 +14,10 @@ export function buildBudgetTextSummary(budget: Budget, profile: CompanyProfile):
   if (budget.client.address?.trim()) {
     message += `📍 *Dirección:* ${budget.client.address.trim()}\n`;
   }
-  message += `📅 *Fecha:* ${budget.date || new Date().toISOString().split('T')[0]}\n`;
+  const formattedEmissionDate = formatDisplayDate(budget.date) || formatDisplayDate(new Date().toISOString().split('T')[0]);
+  message += `📅 *Fecha de emisión:* ${formattedEmissionDate}\n`;
   if (budget.validUntil) {
-    message += `⏳ *Vigencia:* ${budget.validUntil}\n`;
+    message += `⏳ *Vigencia hasta:* ${formatDisplayDate(budget.validUntil)}\n`;
   }
   message += `\n📋 *DETALLE DE ÍTEMS:*\n`;
 
@@ -72,6 +74,11 @@ export function openEmail(budget: Budget, profile: CompanyProfile, targetEmail?:
 
   let body = `Estimado/a ${budget.client.name || 'Cliente'},\n\n`;
   body += `Adjunto la información detallada de su presupuesto Nº ${budget.number || '001'}.\n`;
+  const formattedEmissionDate = formatDisplayDate(budget.date) || formatDisplayDate(new Date().toISOString().split('T')[0]);
+  body += `Fecha de emisión: ${formattedEmissionDate}\n`;
+  if (budget.validUntil) {
+    body += `Vigencia hasta: ${formatDisplayDate(budget.validUntil)}\n`;
+  }
   if (budget.client.address?.trim()) {
     body += `Dirección del cliente / inmueble: ${budget.client.address.trim()}\n`;
   }
@@ -151,7 +158,7 @@ export function buildTechnicalReportTextSummary(budget: Budget, profile: Company
   let message = `📋 *INFORME DE REVISIÓN TÉCNICA PREVENTIVA / ESTADO DE INSTALACIÓN*\n`;
   message += `━━━━━━━━━━━━━━━━━━━━━\n`;
   message += `📄 *N° de Informe:* ${tech?.reportNumber || budget.number || '001'}\n`;
-  message += `📅 *Fecha de Inspección:* ${tech?.inspectionDate || budget.date}\n`;
+  message += `📅 *Fecha de Inspección:* ${formatDisplayDate(tech?.inspectionDate || budget.date)}\n`;
   message += `👤 *Técnico/Inspector:* ${tech?.technicianName || profile.name || 'Técnico'}`;
   if (tech?.technicianLicense) message += ` (Matrícula: ${tech.technicianLicense})`;
   message += `\n`;
@@ -214,7 +221,7 @@ export function openTechnicalReportEmail(budget: Budget, profile: CompanyProfile
   body += `Adjuntamos el informe de revisión técnica preventiva correspondiente a su instalación:\n\n`;
   body += `1. INFORMACIÓN GENERAL:\n`;
   body += `- Nº de Informe: ${tech?.reportNumber || budget.number || '001'}\n`;
-  body += `- Fecha de Inspección: ${tech?.inspectionDate || budget.date}\n`;
+  body += `- Fecha de Inspección: ${formatDisplayDate(tech?.inspectionDate || budget.date)}\n`;
   body += `- Técnico/Inspector: ${tech?.technicianName || profile.name || 'Técnico'}`;
   if (tech?.technicianLicense) body += ` (Reg/Matrícula: ${tech.technicianLicense})`;
   body += `\n- Propietario/Cliente: ${tech?.clientName || budget.client.name}\n`;
